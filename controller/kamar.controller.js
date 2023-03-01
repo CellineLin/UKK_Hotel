@@ -17,10 +17,18 @@ let password = md5(`password`);
 
 /** function to read all data */
 exports.getAllKamar = async (request, response) => {
-  let kamar = await kamarModel.findAll();
+  let kamar = await kamarModel.findAll({
+    attributes:[
+      "id",
+      "nomor_kamar",
+      "id_tipe_kamar",
+      "createdAt",
+      "updatedAt"
+    ]
+  });
   return response.json({
     success: true,
-    data: kamars,
+    data: kamar,
     message: `All room have been loaded`,
   });
 };
@@ -38,7 +46,7 @@ exports.findkamar = async (request, response) => {
   });
   return response.json({
     success: true,
-    data: users,
+    data: kamars,
     message: `All kamar have been loaded`,
   });
 };

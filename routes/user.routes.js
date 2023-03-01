@@ -7,6 +7,7 @@ app.use(express.json());
 const UserController = require("../controller/user.controller");
 
 app.get("/", UserController.getAllUser);
+app.post("/login", UserController.login);
 app.post("/find", UserController.findUser);
 app.post("/", UserController.addUser);
 app.put("/:id", UserController.updateUser);

@@ -13,6 +13,8 @@ const fs = require(`fs`);
 const upload = require("./upload-user").single(`foto`);
 const md5 = require(`md5`);
 let password = md5(`password`);
+const jsonwebtoken  = require("jsonwebtoken");
+const SECRET_KEY = "secretcode"
 
 
 /** function to read all data */
@@ -24,6 +26,50 @@ exports.getAllUser = async (request, response) => {
     message: `All Users have been loaded`,
   });
 };
+
+exports.login = async (req, res) => {
+  try {
+      const params = {
+          email : req.body.email,
+          password : md5(req.body.password),
+      };
+      console.log(params)
+
+      const findUser = await userModel.findOne({ where : params});
+      if(findUser == null){
+          return res.status(404).json({
+              message : "email or password doesn't match",
+              err : error,
+          });
+      }
+      console.log(findUser)
+
+      let tokenPayload = {
+          id_user: findUser.id_customer,
+          email: findUser.email,
+          role : findUser.role,
+      };
+      tokenPayload = JSON.stringify(tokenPayload);
+      let token = await jsonwebtoken.sign(tokenPayload, SECRET_KEY);
+
+      return res.status(200).json({
+          message : "Success login",
+          data : {
+              token: token,
+              id_user : findUser.id_user,
+              email : findUser.email,
+              role : findUser.role,
+          },
+      });
+  } catch (err) {
+      console.log(err);
+      return res.status(500).json({
+          message: "Internal error",
+          err : err,
+      });
+  }
+};
+
 exports.findUser = async (request, response) => {
   let nama_user = request.body.nama_user;
   let email = request.body.email;
