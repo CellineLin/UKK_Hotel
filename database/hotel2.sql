@@ -3,7 +3,6 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 05 Feb 2023 pada 06.55
 -- Versi server: 10.4.27-MariaDB
 -- Versi PHP: 7.4.33
 SET

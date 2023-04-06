@@ -77,7 +77,7 @@ exports.findUser = async (request, response) => {
 
   let users = await userModel.findAll({
     where: {
-      [Op.or]: [
+      [Op.and]: [
         { nama_user: { [Op.substring]: nama_user } },
         { email: { [Op.substring]: email } },
         { role: { [Op.substring]: role } },
@@ -127,40 +127,48 @@ exports.addUser = (request, response) => {
 };
 
 exports.updateUser = async (request, response) => {
-  let dataUser = {
-    nama_user: request.body.nama_user,
-    email: request.body.email,
-    password: md5(request.body.password),
-    role: request.body.role,
-  };
-  if (request.file) {
-    const selectedUser = await userModel.findOne({
-      where: { id: id },
-    });
-    const oldImageUser = selectedUser.image;
-    const pathImage = path.join(__dirname, `../foto_prib`, oldImageUser);
-    if (fs.existsSync(pathImage)) {
-      fs.unlink(pathImage, (error) => console.log(error));
+  upload(request, response, async (err) => {
+    if (err) {
+      return response.json({ message: err});
     }
-    user.foto = request.file.filename;
-  }
-  userModel
-    .update(dataUser, { where: { id: idUser } })
-    .then((result) => {
-      return response.json({
-        succes: true,
-        messagee: `Data user has been update`,
+    let id = request.params.id;
+    let dataUser = {
+      nama_user: request.body.nama_user,
+      email: request.body.email,
+      password: md5(request.body.password),
+      role: request.body.role,
+    };
+    console.log(dataUser);
+    if (request.file) {
+      const selectedUser = await userModel.findOne({
+        where: { id: id },
       });
-    })
-    .catch((error) => {
-      return response.json({
-        succes: false,
-        message: error.message,
+      const oldImageUser = selectedUser.foto;
+      const pathImage = path.join(__dirname, `../foto_prib`, oldImageUser);
+      if (fs.existsSync(pathImage)) {
+        fs.unlink(pathImage, (error) => console.log(error));
+      }
+      dataUser.foto = request.file.filename;
+    }
+    userModel
+      .update(dataUser, { where: { id: id } })
+      .then((result) => {
+        return response.json({
+          succes: true,
+          message: `Data user has been update`,
+        });
+      })
+      .catch((error) => {
+        return response.json({
+          succes: false,
+          message: error.message,
+        });
       });
-    });
+  })
 };
+
 exports.deleteUser = async (request, response) => {
-  const idUser = request.params.id;
+  const id = request.params.id;
   const user = await userModel.findOne({where: {id : id}})
   const pict = user.foto
 
@@ -170,7 +178,7 @@ exports.deleteUser = async (request, response) => {
     fs.unlink(pathPhoto, error => console.log(error))
   }
   userModel
-    .destroy({ where: { id: idUser } })
+    .destroy({ where: { id: id } })
     .then(result => {
       return response.json({
         success: true,
